@@ -46,13 +46,18 @@ defmodule Lab1.MessageProcessor do
     %{active: active} = DynamicSupervisor.count_children(__MODULE__)
     counter = :ets.update_counter(@ets_table, :round_robin, {2, 1, current_load, 0})
 
+    IO.puts("\n\nactive: #{active}; counter: #{counter}; current_load: #{current_load}\n\n")
+
     cond do
       current_load > active or active == 0 ->
         DynamicSupervisor.start_child(__MODULE__, worker_spec(counter))
         counter
       active > current_load or active > 2 ->
         pid = GenServer.whereis(Lab1.MessageProcessorWorker.via_tuple(counter))
-        Supervisor.terminate_child(__MODULE__, pid)
+        case is_pid(pid) do
+          true -> DynamicSupervisor.terminate_child(__MODULE__, pid)
+          false -> {:error, :not_found}
+        end
         :ets.update_counter(@ets_table, :round_robin, {2, 1, current_load + 1, 0})
       true ->
         counter
