@@ -3,10 +3,6 @@ defmodule Lab1.MessageProcessorWorker do
 
   @sleep_range 50..500
 
-  def init(_) do
-    {:ok}
-  end
-
   def start_link(id) do
     IO.puts("Starting MessageProcessorWorker with id: #{inspect via_tuple(id)}")
 
