@@ -2,7 +2,8 @@ defmodule Lab1.SSEReaderWorker do
   use GenServer
 
   def init({id, url}) do
-    {:ok, {id ,url}}
+    state = %{id: id, url: url}
+    {:ok, state}
   end
 
   def start_link({id, url}) do
@@ -15,15 +16,17 @@ defmodule Lab1.SSEReaderWorker do
       )
   end
 
-  def handle_info(:start_reader, {id, url}) do
-    IO.puts("Starting SSEReaderWorker stream for #{url}#{id}")
-    start_eventsource_stream(id, url)
-    {:noreply, []}
+  def handle_info(:start_reader, state) do
+    IO.puts("Starting SSEReaderWorker stream for #{state[:url]}#{state[:id]}")
+    start_eventsource_stream(state[:id], state[:url])
+    {:noreply, state}
   end
 
-  def handle_info(%{data: data}, _) do
+  def handle_info(msg, state) do
+    %{data: data} = msg
+
     Lab1.MessageProcessor.consume(data)
-    {:noreply, data}
+    {:noreply, state}
   end
 
   defp start_eventsource_stream(id, url) do
