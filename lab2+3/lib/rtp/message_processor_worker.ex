@@ -8,7 +8,7 @@ defmodule RTP.MessageProcessorWorker do
   end
 
   def start_link(id) do
-    IO.puts("Starting MessageProcessorWorker with id: #{inspect via_tuple(id)}")
+    # IO.puts("Starting MessageProcessorWorker with id: #{inspect via_tuple(id)}")
 
     GenServer.start_link(
       __MODULE__,
@@ -28,8 +28,12 @@ defmodule RTP.MessageProcessorWorker do
 
   def handle_cast({:process, data}, state) do
     :timer.sleep(Enum.random(@sleep_range))
-    { engagement_ratio, sentiment_score } = RTP.Analyzer.calculate_score(data)
-    IO.puts("Engagement ratio: #{engagement_ration} \t Sentiment score: #{sentiment_score}")
+    tweet_string = Jason.decode!(data)
+
+    {engagement_ratio, sentiment_score} = RTP.Analyzer.calculate_score(tweet_string)
+    RTP.MessageBroker.insert_messages(:tweets, data)
+    # IO.puts("Engagement ratio: #{engagement_ratio} \t Sentiment score: #{sentiment_score}")
+    RTP.Sink.add_tweet(tweet_string)
     {:noreply, state}
   end
 

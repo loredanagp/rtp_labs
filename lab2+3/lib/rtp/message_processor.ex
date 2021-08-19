@@ -46,7 +46,7 @@ defmodule RTP.MessageProcessor do
     %{active: active} = DynamicSupervisor.count_children(__MODULE__)
     counter = :ets.update_counter(@ets_table, :round_robin, {2, 1, current_load, 0})
 
-    IO.puts("\n\nactive: #{active}; counter: #{counter}; current_load: #{current_load}\n\n")
+    # IO.puts("\n\nactive: #{active}; counter: #{counter}; current_load: #{current_load}\n\n")
 
     cond do
       current_load > active or active == 0 ->
